@@ -53,3 +53,75 @@ BEGIN
 END $$
 
 DELIMITER ;
+
+
+DELIMITER $$
+
+CREATE PROCEDURE EfetuarEmprestimo (
+    IN p_ID_Exemplar INT,
+    IN p_ID_Cliente INT,
+    IN p_ID_Funcionario INT
+)
+BEGIN
+    -- Verifica existência do exemplar, cliente e funcionário
+    IF EXISTS (SELECT 1 FROM Exemplar WHERE ID_Exemplar = p_ID_Exemplar)
+       AND EXISTS (SELECT 1 FROM Cliente WHERE ID_Cliente = p_ID_Cliente)
+       AND EXISTS (SELECT 1 FROM Funcionario WHERE ID_Funcionario = p_ID_Funcionario) THEN
+
+        -- Insere o empréstimo com data início hoje, data fim daqui 15 dias e ativo = 1
+        INSERT INTO Emprestimo (ID_Exemplar, ID_Cliente, ID_Funcionario, DataInicio, DataFim, Ativo)
+        VALUES (
+            p_ID_Exemplar,
+            p_ID_Cliente,
+            p_ID_Funcionario,
+            CURDATE(),
+            DATE_ADD(CURDATE(), INTERVAL 15 DAY),
+            1
+        );
+
+        -- Decrementa a quantidade do exemplar
+        UPDATE Exemplar
+        SET Quantidade = Quantidade - 1
+        WHERE ID_Exemplar = p_ID_Exemplar;
+
+    ELSE
+        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Exemplar, Cliente ou Funcionario não encontrado.';
+    END IF;
+END$$
+
+DELIMITER ;
+
+DELIMITER $$
+
+CREATE PROCEDURE EfetuarReserva (
+    IN p_ID_Exemplar INT,
+    IN p_ID_Cliente INT,
+    IN p_ID_Funcionario INT
+)
+BEGIN
+    -- Verifica existência do exemplar, cliente e funcionário
+    IF EXISTS (SELECT 1 FROM Exemplar WHERE ID_Exemplar = p_ID_Exemplar)
+       AND EXISTS (SELECT 1 FROM Cliente WHERE ID_Cliente = p_ID_Cliente)
+       AND EXISTS (SELECT 1 FROM Funcionario WHERE ID_Funcionario = p_ID_Funcionario) THEN
+
+        -- Insere a reserva com data início hoje e data fim daqui 15 dias
+        INSERT INTO Reserva (ID_Exemplar, ID_Cliente, ID_Funcionario, DataInicio, DataFim)
+        VALUES (
+            p_ID_Exemplar,
+            p_ID_Cliente,
+            p_ID_Funcionario,
+            CURDATE(),
+            DATE_ADD(CURDATE(), INTERVAL 15 DAY)
+        );
+
+        -- Decrementa a quantidade do exemplar
+        UPDATE Exemplar
+        SET Quantidade = Quantidade - 1
+        WHERE ID_Exemplar = p_ID_Exemplar;
+
+    ELSE
+        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Exemplar, Cliente ou Funcionario não encontrado.';
+    END IF;
+END$$
+
+DELIMITER ;
