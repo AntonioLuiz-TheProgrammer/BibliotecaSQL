@@ -72,28 +72,28 @@ create table Emprestimo(
     Ativo bit
 );
 
-create table Livro_Autor(
-	ID_Livro_Autor int primary key auto_increment,
-    ID_Livro int,
-    foreign key(ID_Livro) references Livro(ID_Livro),
-    ID_Autor int,
-    foreign key(ID_Autor) references Autor(ID_Autor)
+CREATE TABLE Livro_Autor (
+	ID_Livro_Autor INT PRIMARY KEY AUTO_INCREMENT,
+    ID_Livros INT,
+    FOREIGN KEY (ID_Livros) REFERENCES Livros(ID_Livros),
+    ID_Autor INT,
+    FOREIGN KEY (ID_Autor) REFERENCES Autor(ID_Autor)
 );
 
-create table Livro_Editora(
-	ID_Livro_Editora int primary key auto_increment,
-    ID_Livro int,
-    foreign key(ID_Livro) references Livro(ID_Livro),
-    ID_Editora int,
-    foreign key(ID_Editora) references Editora(ID_Editora)	
+CREATE TABLE Livro_Editora (
+	ID_Livro_Editora INT PRIMARY KEY AUTO_INCREMENT,
+    ID_Livros INT,
+    FOREIGN KEY (ID_Livros) REFERENCES Livros(ID_Livros),
+    ID_Editora INT,
+    FOREIGN KEY (ID_Editora) REFERENCES Editora(ID_Editora)
 );
 
-create table Livro_Categoria(
-	ID_Livro_Categoria int primary key auto_increment,
-    ID_Livro int,
-    foreign key(ID_Livro) references Livro(ID_Livro),
-    ID_Categoria int,
-    foreign key(ID_Categoria) references Categoria(ID_Categoria)
+CREATE TABLE Livro_Categoria (
+	ID_Livro_Categoria INT PRIMARY KEY AUTO_INCREMENT,
+    ID_Livros INT,
+    FOREIGN KEY (ID_Livros) REFERENCES Livros(ID_Livros),
+    ID_Categoria INT,
+    FOREIGN KEY (ID_Categoria) REFERENCES Categoria(ID_Categoria)
 );
 
 create table Multa(
