@@ -95,7 +95,18 @@ BEGIN
     IF EXISTS (SELECT 1 FROM Exemplar WHERE ID_Exemplar = p_ID_Exemplar)
        AND EXISTS (SELECT 1 FROM Cliente WHERE ID_Cliente = p_ID_Cliente)
        AND EXISTS (SELECT 1 FROM Funcionario WHERE ID_Funcionario = p_ID_Funcionario) THEN
+	
+    
+       -- Decrementa a quantidade do exemplar
+        UPDATE Exemplar
+        SET Quantidade = Quantidade - 1
+        WHERE ID_Exemplar = p_ID_Exemplar;
 
+    ELSE
+        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Exemplar, Cliente ou Funcionario não encontrado.';
+    END IF;
+    
+    
         -- Insere o empréstimo com data início hoje, data fim daqui 15 dias e ativo = 1
         INSERT INTO Emprestimo (ID_Exemplar, ID_Cliente, ID_Funcionario, DataInicio, DataFim, Ativo)
         VALUES (
@@ -107,14 +118,6 @@ BEGIN
             1
         );
 
-        -- Decrementa a quantidade do exemplar
-        UPDATE Exemplar
-        SET Quantidade = Quantidade - 1
-        WHERE ID_Exemplar = p_ID_Exemplar;
-
-    ELSE
-        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Exemplar, Cliente ou Funcionario não encontrado.';
-    END IF;
 END$$
 
 DELIMITER ;
