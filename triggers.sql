@@ -61,3 +61,87 @@ END$$
 
 DELIMITER ;
 
+-- evitar email repetido 
+
+DELIMITER $$
+
+CREATE TRIGGER evitar_email_cliente_repetido
+BEFORE INSERT ON Cliente
+FOR EACH ROW
+BEGIN
+    IF EXISTS (SELECT 1 FROM Cliente WHERE EmailCliente = NEW.EmailCliente) THEN
+        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Erro: E-mail já cadastrado.';
+    END IF;
+END$$
+
+DELIMITER ;
+
+
+DELIMITER $$
+
+
+-- Impedir cadastro de livro com páginas negativas
+CREATE TRIGGER validar_paginas_livro
+BEFORE INSERT ON Livros
+FOR EACH ROW
+BEGIN
+    IF NEW.NumeroDePaginas <= 0 THEN
+        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Erro: Número de páginas inválido.';
+    END IF;
+END$$
+
+DELIMITER ;
+
+ -- Detectar tentativa de reserva com exemplar esgotado
+
+ DELIMITER $$
+
+CREATE TRIGGER impedir_reserva_exemplar_zerado
+BEFORE INSERT ON Reserva
+FOR EACH ROW
+BEGIN
+    DECLARE qtd INT;
+    SELECT Quantidade INTO qtd FROM Exemplar WHERE ID_Exemplar = NEW.ID_Exemplar;
+
+    IF qtd <= 0 THEN
+        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Erro: Exemplar esgotado.';
+    END IF;
+END$$
+
+DELIMITER ;
+
+DELIMITER $$
+
+CREATE TRIGGER gerar_multa_automaticamente
+AFTER UPDATE ON Emprestimo
+FOR EACH ROW
+BEGIN
+    DECLARE dias_atraso INT;
+    DECLARE valor_multa FLOAT;
+
+    IF OLD.Ativo = 1 AND NEW.Ativo = 0 THEN
+        SET dias_atraso = DATEDIFF(CURDATE(), OLD.DataFim);
+
+        IF dias_atraso > 0 THEN
+            SET valor_multa = dias_atraso * 2.00;
+
+            INSERT INTO Multa (ID_Cliente, ID_Emprestimo, Valor, Ativo)
+            VALUES (OLD.ID_Cliente, OLD.ID_Emprestimo, valor_multa, 1);
+        END IF;
+    END IF;
+END$$
+
+DELIMITER ;
+
+DELIMITER $$
+
+CREATE TRIGGER validar_CPF_funcionario
+BEFORE INSERT ON Funcionario
+FOR EACH ROW
+BEGIN
+    IF LENGTH(NEW.CPF) <> 11 OR NEW.CPF REGEXP '[^0-9]' THEN
+        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'CPF inválido: deve conter exatamente 11 números.';
+    END IF;
+END$$
+
+DELIMITER ;

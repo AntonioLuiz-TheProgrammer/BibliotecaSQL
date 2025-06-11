@@ -176,3 +176,110 @@ END$$
 
 DELIMITER ;
 
+DELIMITER $$
+
+CREATE PROCEDURE DevolverLivro (
+    IN p_ID_Emprestimo INT
+)
+BEGIN
+    DECLARE v_ID_Exemplar INT;
+
+    SELECT ID_Exemplar INTO v_ID_Exemplar FROM Emprestimo WHERE ID_Emprestimo = p_ID_Emprestimo;
+
+    UPDATE Exemplar
+    SET Quantidade = Quantidade + 1
+    WHERE ID_Exemplar = v_ID_Exemplar;
+
+    UPDATE Emprestimo
+    SET Ativo = 0
+    WHERE ID_Emprestimo = p_ID_Emprestimo;
+END$$
+
+DELIMITER ;
+
+
+DELIMITER $$
+
+CREATE PROCEDURE PagarMulta (
+    IN p_ID_Multa INT
+)
+BEGIN
+    UPDATE Multa
+    SET Ativo = 0
+    WHERE ID_Multa = p_ID_Multa;
+END$$
+
+DELIMITER ;
+
+
+DELIMITER $$
+
+-- buscar livro
+CREATE PROCEDURE BuscarLivro (
+    IN p_TituloBusca VARCHAR(255)
+)
+BEGIN
+    SELECT * FROM Livros
+    WHERE Titulo LIKE CONCAT('%', p_TituloBusca, '%');
+END$$
+
+DELIMITER ;
+
+DELIMITER $$
+
+CREATE PROCEDURE ListarEmprestimosAtivosPorCliente (
+    IN p_ID_Cliente INT
+)
+BEGIN
+    SELECT E.ID_Emprestimo, L.Titulo, Ex.ID_Exemplar, E.DataInicio, E.DataFim
+    FROM Emprestimo E
+    JOIN Exemplar Ex ON E.ID_Exemplar = Ex.ID_Exemplar
+    JOIN Livros L ON Ex.ID_Livros = L.ID_Livros
+    WHERE E.ID_Cliente = p_ID_Cliente AND E.Ativo = 1;
+END$$
+
+DELIMITER ;
+
+
+DELIMITER $$
+
+CREATE PROCEDURE AdicionarSaldoCliente (
+    IN p_ID_Cliente INT,
+    IN p_Valor FLOAT(7,2)
+)
+BEGIN
+    IF p_Valor <= 0 THEN
+        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Valor inválido para adicionar saldo.';
+    ELSE
+        UPDATE Cliente
+        SET Saldo = Saldo + p_Valor
+        WHERE ID_Cliente = p_ID_Cliente;
+    END IF;
+END$$
+
+DELIMITER ;
+
+
+DELIMITER $$
+
+CREATE PROCEDURE ComprarLivro (
+    IN p_ID_Livro INT,
+    IN p_ID_Cliente INT
+)
+BEGIN
+    DECLARE v_preco FLOAT;
+    DECLARE v_saldo FLOAT;
+
+    SELECT Preco INTO v_preco FROM Livros WHERE ID_Livros = p_ID_Livro;
+    SELECT Saldo INTO v_saldo FROM Cliente WHERE ID_Cliente = p_ID_Cliente;
+
+    IF v_preco IS NULL OR v_saldo IS NULL THEN
+        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Cliente ou livro não encontrado.';
+    ELSEIF v_saldo < v_preco THEN
+        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Saldo insuficiente para compra.';
+    ELSE
+        UPDATE Cliente SET Saldo = Saldo - v_preco WHERE ID_Cliente = p_ID_Cliente;
+    END IF;
+END$$
+
+DELIMITER ;
