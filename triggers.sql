@@ -1,5 +1,8 @@
+
 DELIMITER $$
+
 -- Se o salário do funcionário for menor que o salário minimo, impede a atualização
+
 CREATE TRIGGER evitar_reducao_salario
 BEFORE insert ON Funcionario
 FOR EACH ROW
@@ -10,6 +13,7 @@ BEGIN
 END$$
 
 DELIMITER ;
+
 
 DELIMITER $$
 -- Impede o numero de exemplares ser negativo
@@ -25,6 +29,7 @@ end $$
 
 DELIMITER ;
 
+
 DELIMITER $$
 -- Limita a um emprestimo ativo por cliente
 CREATE TRIGGER LimitarEmprestimo
@@ -38,3 +43,21 @@ BEGIN
 END$$
 
 DELIMITER ;
+
+
+-- Trigger 2: essa trigger é responsável por padronizar o formato do título do livro, tirando espaços em brancos no incio e fim, e tambem garantindo a primeira letra do titulo ser maiuscula 
+DELIMITER $$
+
+CREATE TRIGGER padronizar_titulo_livro
+BEFORE INSERT ON Livros
+FOR EACH ROW
+BEGIN
+    SET NEW.Titulo = TRIM(NEW.Titulo);
+    
+    IF LENGTH(NEW.Titulo) > 0 THEN
+        SET NEW.Titulo = CONCAT(UPPER(SUBSTRING(NEW.Titulo, 1, 1)), LOWER(SUBSTRING(NEW.Titulo, 2)));
+    END IF;
+END$$
+
+DELIMITER ;
+
