@@ -156,3 +156,23 @@ BEGIN
 END$$
 
 DELIMITER ;
+
+DELIMITER $$
+
+CREATE PROCEDURE AdicionarExemplar (
+    IN p_ID_Livro INT,
+    IN p_Quantidade INT
+)
+BEGIN
+    IF EXISTS (SELECT 1 FROM Exemplar WHERE ID_Livros = p_ID_Livro) THEN
+        UPDATE Exemplar
+        SET Quantidade = Quantidade + p_Quantidade
+        WHERE ID_Livros = p_ID_Livro;
+    ELSE
+        INSERT INTO Exemplar (ID_Livros, Quantidade)
+        VALUES (p_ID_Livro, p_Quantidade);
+    END IF;
+END$$
+
+DELIMITER ;
+
