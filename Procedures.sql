@@ -1,23 +1,51 @@
-CREATE PROCEDURE RegistrarLivro (IN ISBN int, Titulo varchar(255), Sinopse varchar(255),
- NumeroDePaginas int, BestSeller bit, Endereco varchar(255),  NomeEditora varchar(255),
- NomeAutor varchar(255), NomeCategoria varchar(255))
+DELIMITER $$
+
+CREATE PROCEDURE RegistrarLivro (IN p_ISBN int, IN p_Titulo varchar(255), IN p_Sinopse varchar(255),
+ IN p_NumeroDePaginas int, IN p_BestSeller bit, IN p_Endereco varchar(255), IN p_NomeEditora varchar(255),
+ IN p_NomeAutor varchar(255), IN p_NomeCategoria varchar(255))
 BEGIN
-
-		if ISBN not in (Livros) then
-			insert into Livros values(ISBN, Titulo, Sinopse, NumeroDePaginas, BestSeller);
-            
-		if NomeEditora not in (Editora) then
-			insert into Editora values(NomeEditora, Endereco);
+		declare varID_Livros int;
+        declare varID_Autor int;
+        declare varID_Editora int;
+        declare varID_Categoria int;
         
-        if NomeAutor not in  (Autor) then
-			insert into Autor values(NomeAutor);
-            
-		if NomeCategoria not in (NomeCategoria) then
-			insert into Categoria values(NomeCategoria);
+		if not exists (select 1 from Livros where ISBN = p_ISBN) then
+			insert into Livros(ISBN, Titulo, Sinopse, NumeroDePaginas, BestSeller) 
+            values(p_ISBN, p_Titulo, p_Sinopse, p_NumeroDePaginas, p_BestSeller);
+		end if;
+        
+		if not exists (select 1 from Editora where NomeEditora = p_NomeEditora) then
+			insert into Editora(NomeEditora, Endereco)
+            values(p_NomeEditora, p_Endereco);
+        end if;
+        
+        if not exists (select 1 from Autor where NomeAutor = p_NomeAutor) then
+			insert into Autor(NomeAutor)
+            values(p_NomeAutor);
+		end if;
+        
+		if not exists (select 1 from Categoria where NomeCategoria = p_NomeCategoria) then
+			insert into Categoria(NomeCategoria)
+            values(p_NomeCategoria);
+		end if;
+        
+        select ID_Livros into varID_Livros from Livros where ISBN = p_ISBN;
+        select ID_Autor into varID_Autor from Autor where NomeAutor = p_NomeAutor;
+        select ID_Editora into varID_Editora from Editora where NomeEditora = p_NomeEditora;
+        select ID_Categoria into varID_Categoria from Categoria where NomeCategoria = p_NomeCategoria;
+        
+        insert into livro_autor(ID_Livro, ID_Autor)
+        values(varID_Livros, varID_Autor);
+        
+        insert into livro_Editora(ID_Livro, ID_Editora)
+        values(varID_Livros, varID_Editora);
+        
+        insert into livro_Categoria(ID_Livro, ID_Categoria)
+        values(varID_Livros, varID_Categoria);
 	
-	
-END
+END $$
 
+DELIMITER ;
 
 DELIMITER $$
 
